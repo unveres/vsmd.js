@@ -1,30 +1,33 @@
 function markdown(code) {
+  const getStr = (obj) =>
+    Object.prototype.toString.call(obj) === '[object String]' ? obj : "";
+
   /*
+    tag    tag name
     ord    ordinary text, always printed
     value  formatted text
     src    src/href
     title  img title
   */
 
-  const getStr =
-    (obj) => Object.prototype.toString.call(obj) === '[object String]' ? obj : "";
-
-  const makeTag =
-    (tag, ord, value, src, title) => ord + (tag == "img_with_title"
+  const makeTag = (tag, ord, value, src, title) =>
+    ord.concat(/* functional switch */ false?""
+      : tag == "img_with_title"
       ? "<img alt=\"" + value + "\" src=\"" + src + "\" title=\"" + title + "\" />"
       : tag == "img_without_title"
-        ? "<img alt=\"" + value + "\" src=\"" + src + "\" />"
-        : tag == "a"
-          ? "<a href=\"" + src + "\">" + value + "</a>"
-          : getStr(value)
-            ? "<" + tag + ">" + value + "</" + tag + ">" + getStr(src)
-            : "<" + tag + " />"+ getStr(src));
+      ? "<img alt=\"" + value + "\" src=\"" + src + "\" />"
+      : tag == "a"
+      ? "<a href=\"" + src + "\">" + value + "</a>"
+      : tag == "bi"
+      ? "<b><i>" + value + "</i></b>"
+      : getStr(value)
+      ? "<" + tag + ">" + value + "</" + tag + ">" + getStr(src)
+      : "<" + tag + " />"+ getStr(src));
 
-  const applyRules = 
-    (str, arr) =>
-      arr.reduce((prev, cur) =>
-        prev.replace(new RegExp(cur[0], "g"), /* str.replace(rule, tag) */
-                     (a, p0, p1, p2, p3) => makeTag(cur[1], p0, p1, p2, p3)), str);
+  const applyRules = (str, arr) =>
+    arr.reduce((prev, cur) =>
+      prev.replace(new RegExp(cur[0], "g"), /* str.replace(rule, tag) */
+                   (a, p0, p1, p2, p3) => makeTag(cur[1], p0, p1, p2, p3)), str);
   
   code = "\n" + code + "\n";
 
@@ -37,8 +40,10 @@ function markdown(code) {
     ["(\n)[ \t]*#[ \t]*(.*)", "h1"],
     ["(\n)\\*{3,}()", "hr"],
     ["(\n)_{3,}()", "hr"],
+    ["([^\\\\])\\*\\*\\*(.*?[^\\\\])\\*\\*\\*", "bi"],
     ["([^\\\\])\\*\\*(.*?[^\\\\])\\*\\*", "b"],
     ["([^\\\\])\\*(.*?[^\\\\])\\*", "i"],
+    ["([^\\\\])___(.*?[^\\\\])___", "bi"],
     ["([^\\\\])__(.*?[^\\\\])__", "b"],
     ["([^\\\\])_(.*?[^\\\\])_", "i"],
     ["([^\\\\])~~(.*?[^\\\\])~~", "s"],
